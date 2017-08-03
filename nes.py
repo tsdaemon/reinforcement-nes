@@ -27,17 +27,19 @@ class NESOptimizer(object):
             # Generates random noise for each parameter
             N = np.random.normal(scale=self.sigma, size=(n_episodes_in_batch, w.shape[0]))
 
-            def run(n_thread, n_episode):
-                env = envs[n_thread]
-                w_try = w + N[n_episode]
-                reward, steps, _ = self._run_episode(env, w_try)
-                rewards[n_episode] = reward
+
 
             # Evaluates all sets of parameters in parallel
             episodes_done = 0
             while episodes_done < n_episodes_in_batch:
+                def run(n_thread):
+                    env = envs[n_thread]
+                    w_try = w + N[episodes_done+n_thread]
+                    reward, steps, _ = self._run_episode(env, w_try)
+                    rewards[episodes_done+n_thread] = reward
+
                 episodes_to_run = min(n_threads, n_episodes_in_batch-episodes_done)
-                pool.map(lambda n_thread: run(n_thread, episodes_done+n_thread), range(episodes_to_run))
+                pool.map(run, range(episodes_to_run))
                 episodes_done += episodes_to_run
 
             reward_history.append(np.mean(rewards))
@@ -48,7 +50,7 @@ class NESOptimizer(object):
                 break
 
             if verbose:
-                print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, m, std))
+                print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, np.mean(rewards), np.std(rewards)))
 
         return w, reward_history
 
@@ -71,13 +73,13 @@ class NESOptimizer(object):
                 rewards[i] = reward
             reward_history.append(np.mean(rewards))
 
-            w, stop = self._update_w(rewards, stop_on_std_zero, n_episodes_in_batch, N, w, n_episodes_in_batch)
+            w, stop = self._update_w(rewards, stop_on_std_zero, N, w, n_episodes_in_batch)
+
+            if verbose:
+                print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, np.mean(rewards), np.std(rewards)))
 
             if stop:
                 break
-
-            if verbose:
-                print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, m, std))
 
         return w, reward_history
 
@@ -86,6 +88,7 @@ class NESOptimizer(object):
         std = np.std(rewards)
         m = np.mean(rewards)
         if std == 0 and stop_on_std_zero: return w, True
+        elif std == 0: std = 0.001
         # Reward transformed to weights
         A = (rewards - m) / std
         # Finally weights are changed on a vector of weighted sum of
@@ -97,6 +100,7 @@ class NESOptimizer(object):
         done = False
         observation = env.reset()
         ep_reward = 0
+        w = w.reshape(self.obs_space['n'], self.action_space['n'])
         while not done:
             action = self.policy(w, observation)
             observation, reward, done, _ = env.step(action)

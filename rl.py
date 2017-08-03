@@ -18,7 +18,11 @@ def get_policy(obs_space_info, action_space_info):
 
     def sigmoid_policy(w, observation):
         """ continuous observations, discrete actions """
-        return np.argmax(np.outer(observation, w))
+        #print(w.shape)
+        #print(observation.shape)
+        outer = np.dot(observation, w)
+        #print(outer)
+        return np.argmax(outer)
 
     def one_hot_sigmoid_policy(w, observation):
         one_hot = np.eye(obs_space_info['n'])[observation]
