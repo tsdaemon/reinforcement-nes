@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--n-threads', default=1, type=int,
-                    help="Number of threads to use")
 
 parser.add_argument('-p', '--n-episodes', default=10, type=int,
                     help="Number of episodes in batch")
@@ -17,9 +15,6 @@ parser.add_argument('-e', '--env-id', type=str, default="CartPole-v1",
 parser.add_argument('-a', '--alpha', type=float, default=0.1, help="Learning rate")
 
 parser.add_argument('-s', '--sigma', type=float, default=0.1, help="Noise scale")
-
-parser.add_argument('-l', '--elite-set', type=float, default=1.0,
-                    help="Best selection")
 
 parser.add_argument('-b', '--n-batches', type=int, default=100,
                     help="Number of batches")
@@ -37,18 +32,6 @@ parser.add_argument('-f', '--file', type=str, default='',
                     help="File to save results")
 
 
-def train_parallel(args):
-    if args.render or len(args.api_key) > 0:
-        raise RuntimeError("Can not render or watch during parallel training")
-
-    envs = [gym.make(args.env_id) for i in range(args.n_threads)]
-    nes = NESOptimizer(envs[0], args.alpha, args.sigma, args.elite_set)
-    w, history = nes.optimize_parallel(envs, args.n_batches, args.n_episodes, args.verbose)
-    for env in envs:
-        env.close()
-    return history
-
-
 def train(args):
     env = gym.make(args.env_id)
     if len(args.api_key) > 0:
@@ -61,16 +44,12 @@ def train(args):
     if len(args.api_key) > 0:
         gym.upload('./tmp', api_key=args.api_key)
 
-    return history
+    return history, w
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
-    if args.n_threads == 1:
-        reward_history, w = train(args)
-    else:
-        reward_history, w = train_parallel(args)
+    reward_history, w = train(args)
 
     if len(args.file) == 0:
         plt.plot(reward_history)

@@ -1,6 +1,5 @@
 from rl import get_space_info, get_policy
 import numpy as np
-from multiprocessing import Pool
 
 
 class NESOptimizer(object):
@@ -11,49 +10,6 @@ class NESOptimizer(object):
         self.obs_space = get_space_info(env.observation_space)
         self.action_space = get_space_info(env.action_space)
         self.policy = get_policy(self.obs_space, self.action_space)
-
-    def optimize_parallel(self, envs, n_batches, n_episodes_in_batch, verbose=False):
-        """ Performs parallel optimization for given environments """
-        if verbose:
-            self._print_start()
-
-        # Prepare weights
-        w = np.random.rand(self.obs_space['n'] * self.action_space['n'])
-        # Number of simultaneously running threads are equal to number of environments passed
-        n_threads = len(envs)
-        pool = Pool(processes=n_threads)
-        # Obtained reward stored to evaluate total performance
-        reward_history = []
-        rewards = np.zeros(n_episodes_in_batch)
-
-        for j in range(n_batches):
-            # Generates random noise for each parameter
-            N = np.random.normal(scale=self.sigma, size=(n_episodes_in_batch, w.shape[0]))
-
-            # Evaluates all sets of parameters in parallel
-            episodes_done = 0
-            while episodes_done < n_episodes_in_batch:
-                def run(n_thread):
-                    env = envs[n_thread]
-                    w_try = w + N[episodes_done+n_thread]
-                    reward, steps, _ = self._run_episode(env, w_try)
-                    rewards[episodes_done+n_thread] = reward
-
-                episodes_to_run = min(n_threads, n_episodes_in_batch-episodes_done)
-                pool.map(run, range(episodes_to_run))
-                episodes_done += episodes_to_run
-
-            reward_history.append(np.mean(rewards))
-
-            w, stop = self._update_w(rewards, n_episodes_in_batch, N, w, n_episodes_in_batch)
-
-            if stop:
-                break
-
-            if verbose:
-                print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, np.mean(rewards), np.std(rewards)))
-
-        return w, reward_history
 
     def optimize(self, env, n_batches, n_episodes_in_batch,
                  verbose=False, render=False):
