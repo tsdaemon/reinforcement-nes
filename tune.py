@@ -9,7 +9,7 @@ def movingaverage(values, window):
     return sma
 
 if __name__ == "__main__":
-    args = {'batches': 150,
+    args = {'batches': 120,
             'folder': './evaluation/',
             'env': 'Acrobot-v1',
             'n_runs': 5}
@@ -32,9 +32,9 @@ if __name__ == "__main__":
 
     # Hyperparameters to optimize
     parameters = {
-        'sigma': [0.01, 0.5],
-        'alpha': [0.01, 0.5],
-        'episodes': [2, 20]
+        'sigma': [0.02, 0.3],
+        'alpha': [0.001, 0.1],
+        'episodes': [10, 50]
     }
 
     opt = BayesianOptimization(evaluate, parameters, verbose=1)

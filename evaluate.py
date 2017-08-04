@@ -1,8 +1,6 @@
 from multiprocessing import Process, Queue
 from subprocess import run
 import subprocess
-import seaborn as sns
-import matplotlib.pyplot as plt
 import json
 import numpy as np
 import argparse
@@ -24,10 +22,10 @@ def evaluation_process(i, files, args, verbose):
                           '-f', file_name]
 
     if verbose:
-        print("Started process {}: {}...".format(i+1, ' '.join(process_parameters)))
+        print("Started process {}: {}...".format(i + 1, ' '.join(process_parameters)))
     run(process_parameters, stdout=None if verbose else subprocess.DEVNULL)
     if verbose:
-        print("Finished process {}.".format(i+1))
+        print("Finished process {}.".format(i + 1))
     files.put(file_name)
 
 
@@ -38,11 +36,11 @@ def generate_data(n_runs, args, verbose=False):
 
     # Start all processes and wait for finish
     for i in range(n_runs):
-       p = Process(target=evaluation_process, args=(i, files, args, verbose))
-       p.start()
-       processes.append(p)
+        p = Process(target=evaluation_process, args=(i, files, args, verbose))
+        p.start()
+        processes.append(p)
     for p in processes:
-       p.join()
+        p.join()
 
     # Extract return values
     f = []
@@ -58,19 +56,49 @@ def load_data(files):
         with open(file, 'r') as f:
             run_result = json.load(f)
         runs.append(run_result['history'])
-    return np.array(runs)
+    return runs
+
+
+def evaluate_args(args):
+    files = generate_data(args['n_runs'], args, True)
+    return load_data(files)
 
 
 if __name__ == "__main__":
     args1 = {'alpha': 0.2229,
-            'sigma': 0.2542,
-            'batches': 200,
-            'folder': './evaluation/',
-            'env': 'Acrobot-v1',
-            'episodes': 18,
-            'n_runs': 10 }
+             'sigma': 0.2542,
+             'batches': 120,
+             'folder': './evaluation/',
+             'env': 'Acrobot-v1',
+             'episodes': 30,
+             'n_runs': 10}
 
-    files1 = generate_data(args['n_runs'], args, True)
-    result1 = load_data(files)
-    sns.tsplot(data=result)
-    plt.show()
+    args2 = {'alpha': 0.2229,
+             'sigma': 0.2542,
+             'batches': 120,
+             'folder': './evaluation/',
+             'env': 'Acrobot-v1',
+             'episodes': 20,
+             'n_runs': 10}
+
+    args3 = {'alpha': 0.2229,
+             'sigma': 0.2542,
+             'batches': 120,
+             'folder': './evaluation/',
+             'env': 'Acrobot-v1',
+             'episodes': 15,
+             'n_runs': 10}
+
+    args4 = {'alpha': 0.2229,
+             'sigma': 0.2542,
+             'batches': 200,
+             'folder': './evaluation/',
+             'env': 'Acrobot-v1',
+             'episodes': 10,
+             'n_runs': 10}
+
+    args = [args1, args2, args3, args4]
+    results = list(map(evaluate_args, args))
+    d = [args, results]
+    with open('./results/ev_2.json', 'w') as f:
+        json.dump(d, f)

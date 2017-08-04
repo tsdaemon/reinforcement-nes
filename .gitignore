@@ -3,4 +3,4 @@ __pycache__/*
 tmp/*
 evaluation/*
 *.png
-db/*
+results/*
