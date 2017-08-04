@@ -2,8 +2,6 @@ from multiprocessing import Process, Queue
 from subprocess import run
 import subprocess
 import json
-import numpy as np
-import argparse
 
 
 def evaluation_process(i, files, args, verbose):
@@ -67,7 +65,7 @@ def evaluate_args(args):
 if __name__ == "__main__":
     args1 = {'alpha': 0.2229,
              'sigma': 0.2542,
-             'batches': 120,
+             'batches': 75,
              'folder': './evaluation/',
              'env': 'Acrobot-v1',
              'episodes': 30,
@@ -75,7 +73,7 @@ if __name__ == "__main__":
 
     args2 = {'alpha': 0.2229,
              'sigma': 0.2542,
-             'batches': 120,
+             'batches': 75,
              'folder': './evaluation/',
              'env': 'Acrobot-v1',
              'episodes': 20,
@@ -83,7 +81,7 @@ if __name__ == "__main__":
 
     args3 = {'alpha': 0.2229,
              'sigma': 0.2542,
-             'batches': 120,
+             'batches': 75,
              'folder': './evaluation/',
              'env': 'Acrobot-v1',
              'episodes': 15,
@@ -91,7 +89,7 @@ if __name__ == "__main__":
 
     args4 = {'alpha': 0.2229,
              'sigma': 0.2542,
-             'batches': 200,
+             'batches': 75,
              'folder': './evaluation/',
              'env': 'Acrobot-v1',
              'episodes': 10,

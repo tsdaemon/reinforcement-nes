@@ -9,7 +9,7 @@ def movingaverage(values, window):
     return sma
 
 if __name__ == "__main__":
-    args = {'batches': 120,
+    args = {'batches': 75,
             'folder': './evaluation/',
             'env': 'Acrobot-v1',
             'n_runs': 5}
