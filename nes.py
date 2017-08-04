@@ -3,10 +3,9 @@ import numpy as np
 
 
 class NESOptimizer(object):
-    def __init__(self, env, alpha, sigma, elite_set):
+    def __init__(self, env, alpha, sigma):
         self.alpha = alpha
         self.sigma = sigma
-        self.elite_set = elite_set
         self.obs_space = get_space_info(env.observation_space)
         self.action_space = get_space_info(env.action_space)
         self.policy = get_policy(self.obs_space, self.action_space)
@@ -36,18 +35,15 @@ class NESOptimizer(object):
                 rewards[i] = reward
             reward_history.append(np.mean(rewards))
 
-            w, stop = self._update_w(rewards, N, w, n_episodes_in_batch)
+            w = self._update_w(rewards, N, w, n_episodes_in_batch)
 
             if verbose:
                 print("Batch {}/{}, reward mean {}, reward standard deviation {}".format(j + 1, n_batches, np.mean(rewards), np.std(rewards)))
 
-            if stop:
-                break
-
         return w, reward_history
 
     def _print_start(self):
-        print("Started oprimization for environment with {} {} observation parameters and {} {} actions"
+        print("Started optimization for environment with {} {} observation dimensions and {} {} action dimensions"
               .format(self.obs_space['n'], "discrete" if self.obs_space['discrete'] else "continuous",
                       self.action_space['n'], "discrete" if self.action_space['discrete'] else "continuous"))
 

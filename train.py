@@ -37,7 +37,7 @@ def train(args):
     if len(args.api_key) > 0:
         env = gym.wrappers.Monitor(env, './tmp', force=True)
 
-    nes = NESOptimizer(env, args.alpha, args.sigma, args.elite_set)
+    nes = NESOptimizer(env, args.alpha, args.sigma)
     w, history = nes.optimize(env, args.n_batches, args.n_episodes, args.verbose, args.render)
     env.close()
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         plt.plot(reward_history)
         plt.show()
     else:
-        results = {'history':reward_history, 'weights': w}
+        results = {'history': reward_history, 'weights': w.tolist()}
         with open(args.file, 'w') as f:
             json.dump(results, f)
 
